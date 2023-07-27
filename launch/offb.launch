@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="uav_control" name="offb_node_py" type="offb_node_py.py" output="screen">
+    </node>
+</launch>

@@ -130,12 +130,12 @@ class UAVController(object):
         arm_cmd = CommandBoolRequest()
         arm_cmd.value = True
 
-        while not rospy.is_shutdown() and self.mode != 4:
+        while not rospy.is_shutdown() and not self.takeoff:
             if self.current_state.mode != "OFFBOARD":
                 if self.set_mode_client.call(offb_set_mode).mode_sent:
                     rospy.loginfo("OFFBOARD enabled")
             else:
-                if not self.current_state.armed and self.mode != 4:
+                if not self.current_state.armed and not self.takeoff:
                     if self.arming_client.call(arm_cmd).success:
                         rospy.loginfo("Vehicle armed")
                         break

@@ -6,13 +6,14 @@ import rospy
 import message_filters
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped
-
+import tf_conversions
 
 pub_pose_topic = '/mavros/vision_pose/pose'
 pub_odom_topic = '/px4/vision_odom'
 sub_pose_topic = "/vrpn_client_node/uav_nx/pose"
 sub_twist_topic = "/vrpn_client_node/uav_nx/twist"
 
+use_fake_position = rospy.get_param('use_fake_position', False)
 # init node
 rospy.init_node('motion_capture_sync')
 motion_data = geometry_msgs.msg.PoseStamped()
@@ -66,4 +67,17 @@ all_sub.registerCallback(callback_all)
 r = rospy.Rate(50)  # limited by bit rate of radio telemetry
 
 while not rospy.is_shutdown():
-    rospy.spin()  # equal to a while loop
+    if use_fake_position:
+        motion_data.pose.position.x = 0
+        motion_data.pose.position.y = 0
+        motion_data.pose.position.z = 0
+        q = tf_conversions.transformations.quaternion_from_euler(0, 0, 0)
+        motion_data.pose.orientation.x = q[0]
+        motion_data.pose.orientation.y = q[1]
+        motion_data.pose.orientation.z = q[2]
+        motion_data.pose.orientation.w = q[3]
+        motion_data.header.stamp = rospy.get_rostime()
+        pub_pose.publish(motion_data)
+        r.sleep()
+    else:
+        rospy.spin()  # equal to a while loop

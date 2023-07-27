@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="uav_control" name="joystick_listener" type="JoyStick.py" output="screen">
+    </node>
+</launch>

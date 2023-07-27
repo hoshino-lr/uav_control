@@ -1,0 +1,6 @@
+<launch>
+    <arg name="use_fake_position" default="false" />
+    <node pkg="uav_control" name="motion_capture_sync" type="motion_capture_sync.py" output="screen">
+        <param name="use_fake_position" value="$(arg use_fake_position)"/>
+    </node>
+</launch>
