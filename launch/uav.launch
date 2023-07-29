@@ -1,5 +1,9 @@
 <launch>
+    <arg name="server" default="192.168.1.101" />
     <arg name="use_fake_position" default="false" />
+    <include file="$(find vrpn_client_ros)/launch/sample.launch">
+        <arg name="server" value="$(arg server)" />
+    </include>
     <node pkg="uav_control" name="offb_node_py" type="offb_node_py.py" output="screen">
     </node>
     <node pkg="uav_control" name="motion_capture_sync" type="motion_capture_sync.py" output="screen">
