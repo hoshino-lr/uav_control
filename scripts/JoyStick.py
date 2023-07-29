@@ -11,6 +11,10 @@ from mavros_msgs.msg import AttitudeTarget
 class JoyStick(object):
     use_attitude = True
     """---------------------------------------"""
+    max_throttle = 0.7
+    min_throttle = 0.3
+    middle_throttle = 0.55
+    """---------------------------------------"""
     vertical_valve = 0
     forward_value = 0
     turn_value = 0
@@ -70,10 +74,17 @@ class JoyStick(object):
     def joystick_callback_attitude(self, data: Joy):
         # 获取Joystick的输入值
         self.throttle = (data.axes[1] + 1) / 2
+        self.calculate_throttle(self.throttle)
         self.pitch_command = data.axes[3] * self.pitch_max / 180 * pi
         self.roll_command = data.axes[2] * self.roll_max / 180 * pi
         self.yaw_rate_command = data.axes[0] * self.yaw_rate_max / 180 * pi
         # self.publish_attitude()
+
+    def calculate_throttle(self, throttle):
+        if throttle >= 0.5:
+            self.throttle = (1 - throttle) * (self.max_throttle - self.middle_throttle) + self.middle_throttle
+        else:
+            self.throttle = throttle * (self.middle_throttle - self.min_throttle) + self.min_throttle
 
     def joystick_callback_normal(self, data: Joy):
         # 获取Joystick的输入值
