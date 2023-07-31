@@ -55,7 +55,6 @@ def callback_all(pose_data: PoseStamped, twist_data: TwistStamped):
     motion_odom.twist.twist.linear.y = twist_data.twist.linear.y / 1000
     motion_odom.twist.twist.linear.z = twist_data.twist.linear.z / 1000
 
-    pub_odom.publish(motion_odom)
     pub_pose.publish(motion_data)
 
 
@@ -80,4 +79,6 @@ while not rospy.is_shutdown():
         pub_pose.publish(motion_data)
         r.sleep()
     else:
-        rospy.spin()  # equal to a while loop
+        pub_odom.publish(motion_odom)
+        r.sleep()
+        # rospy.spin()  # equal to a while loop
