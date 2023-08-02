@@ -1,8 +1,16 @@
 <launch>
     <arg name="fcu_url" default="/dev/ttyTHS1:921600" />
-    <arg name="gcs_url" default="udp://@192.168.1.100" />
+    <arg name="gcs_url" default="udp://@192.168.1.103" />
+    <arg name="server" default="192.168.1.101" />
+    <arg name="use_fake_position" default="false" />
     <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)" />
     <arg name="gcs_url" value="$(arg gcs_url)" />
     </include>
+    <include file="$(find vrpn_client_ros)/launch/sample.launch">
+        <arg name="server" value="$(arg server)" />
+    </include>
+    <node pkg="uav_control" name="motion_capture_sync" type="motion_capture_sync.py" output="screen">
+        <param name="use_fake_position" value="$(arg use_fake_position)"/>
+    </node>
 </launch>
