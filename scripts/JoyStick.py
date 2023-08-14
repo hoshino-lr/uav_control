@@ -6,6 +6,7 @@ from tf.transformations import quaternion_from_euler
 from sensor_msgs.msg import Joy
 from math import pi
 from mavros_msgs.msg import AttitudeTarget
+from geometry_msgs.msg import PoseStamped
 
 
 class JoyStick(object):
@@ -44,9 +45,16 @@ class JoyStick(object):
     roll_command = 0
     pitch_command = 0
     yaw_rate_command = 0
-    roll_max = 20 # deg
+    roll_max = 20  # deg
     pitch_max = 20  # deg
     yaw_rate_max = 25  # deg/s
+    """-----------------------------------------"""
+    z_max = 0
+    z_min = 0
+    x_max = 0
+    x_min = 0
+    y_max = 0  # deg
+    y_min = 0  # deg
     """-----------------------------------------"""
 
     def __init__(self):
@@ -57,9 +65,11 @@ class JoyStick(object):
         if self.use_attitude:
             rospy.Subscriber("/joy", Joy, self.joystick_callback_attitude, tcp_nodelay=True)
         else:
-            rospy.Subscriber("/joy", Joy, self.joystick_callback_normal, tcp_nodelay=True)
+            rospy.Subscriber("/joy", Joy, self.joystick_callback_pose, tcp_nodelay=True)
         self.attitude_publisher = rospy.Publisher("/mavros/setpoint_raw/attitude", data_class=AttitudeTarget
                                                   , tcp_nodelay=True, queue_size=1)
+        self.pose_publisher = rospy.Publisher("/mavros/setpoint_pose/pose", data_class=PoseStamped
+                                              , tcp_nodelay=True, queue_size=1)
 
     def publish_attitude(self):
         pub_raw = AttitudeTarget()
@@ -71,6 +81,15 @@ class JoyStick(object):
         pub_raw.thrust = self.throttle
         self.attitude_publisher.publish(pub_raw)
 
+    def publish_pose(self):
+        pub_raw = PoseStamped()
+        pub_raw.header.stamp = rospy.rostime.get_rostime()
+        pub_raw.pose.position.x, pub_raw.pose.position.y, pub_raw.pose.position.z = (
+            self.side_abs, self.forward_abs, self.vertical_abs)
+        [pub_raw.pose.orientation.x, pub_raw.pose.orientation.y, pub_raw.pose.orientation.z,
+         pub_raw.pose.orientation.w] = quaternion_from_euler(ai=0, aj=0, ak=0)
+        self.pose_publisher.publish(pub_raw)
+
     def joystick_callback_attitude(self, data: Joy):
         # 获取Joystick的输入值
         self.throttle = (data.axes[1] + 1) / 2
@@ -79,6 +98,12 @@ class JoyStick(object):
         self.roll_command = data.axes[2] * self.roll_max / 180 * pi
         self.yaw_rate_command = data.axes[0] * self.yaw_rate_max / 180 * pi
         # self.publish_attitude()
+
+    def joystick_callback_pose(self, data: Joy):
+        # 获取Joystick的输入值
+        self.side_abs = (data.axes[2] + 1) / 2 * (self.x_max - self.x_min) + self.x_min
+        self.forward_abs = (data.axes[3] + 1) / 2 * (self.y_max - self.y_min) + self.y_min
+        self.vertical_abs = (data.axes[1] + 1) / 2 * (self.z_max - self.z_min) + self.z_min
 
     def calculate_throttle(self, throttle):
         if throttle >= 0.5:
@@ -132,7 +157,10 @@ if __name__ == '__main__':
         joystick = JoyStick()
         rate = rospy.Rate(50)
         while True:
-            joystick.publish_attitude()
+            if joystick.use_attitude:
+                joystick.publish_attitude()
+            else:
+                joystick.publish_pose()
             rate.sleep()
     except rospy.ROSInterruptException:
         pass
