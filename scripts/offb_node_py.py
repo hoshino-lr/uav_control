@@ -94,7 +94,9 @@ class UAVController(object):
                 self.takeoff = False
                 self.srv_dyn.update_configuration({"takeoff": False})
             if self.mode == 0:
-                pass
+                if not self.check_position():
+                    self.land_mode()
+                    break
             elif self.mode == 1:
                 if not self.check_position():
                     self.land_mode()
@@ -147,7 +149,7 @@ class UAVController(object):
     def check_position(self) -> bool:
         if self.safe_x_max > self.motion_pose.pose.position.x > self.safe_x_min and \
                 self.safe_y_max > self.motion_pose.pose.position.y > self.safe_y_min and \
-                self.safe_z_max > self.motion_pose.pose.position.z > self.safe_z_min:
+                self.safe_z_max > self.motion_pose.pose.position.z:
             return True
         else:
             return False
