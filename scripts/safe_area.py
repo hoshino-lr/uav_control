@@ -15,7 +15,6 @@ class NeuralTest(object):
         # Set point publishing MUST be faster than 2Hz
 
         self.sub_state_topic = "mavros/state"
-        self.pub_pose_topic = "uav/command/pose"
 
         self.srv_mode_topic = "/mavros/set_mode"
         self.sub_pose_topic = "/vrpn_client_node/uav_nx/pose"
@@ -32,7 +31,6 @@ class NeuralTest(object):
         self.sub_pose = rospy.Subscriber(self.sub_pose_topic, PoseStamped, callback=self.callback_pose,
                                          tcp_nodelay=True)
         self.sub_state = rospy.Subscriber(self.sub_state_topic, State, callback=self.callback_state, tcp_nodelay=True)
-        self.pub_pose = rospy.Publisher(self.pub_pose_topic, PoseStamped, queue_size=1, tcp_nodelay=True)
         self.set_mode_client = rospy.ServiceProxy(self.srv_mode_topic, SetMode)
 
         self.safe_x_max, self.safe_x_min, self.safe_y_max, self.safe_y_min, self.safe_z_max, self.safe_z_min = \
@@ -40,48 +38,11 @@ class NeuralTest(object):
 
         time.sleep(1)
 
-        """-----------------------------------------------------------"""
-        self.radius = 0.5  # m
-        self.land_z = 1  # m
-        self.takeoff_z = 1.5  # m
-        self.point_x, self.point_y = 0, 0
-        self.valid_times_max = 200
-        self.valid_times = 0
-        self.valid_radius = 0.2
-        """-----------------------------------------------------------"""
-        self.now_point = self.generate_point(self.land_z)
-
-    def distance(self, input_point):
-        return math.dist(input_point, [self.motion_pose.pose.position.x,
-                                       self.motion_pose.pose.position.y,
-                                       self.motion_pose.pose.position.z])
-
-    def check_point(self):
-        if self.valid_times < self.valid_times_max:
-            if self.distance(self.now_point) < self.valid_radius:
-                self.valid_times += 1
-        else:
-            self.valid_times = 0
-            self.now_point = self.generate_point()
-            self.set_pose.pose.position.x, self.set_pose.pose.position.y, \
-                self.set_pose.pose.position.z = self.now_point[0], self.now_point[1], self.now_point[2]
-
-    def generate_point(self, z=0):
-        x = random.uniform(- self.radius / 2, self.radius / 2) + self.point_x
-        y = random.uniform(- self.radius / 2, self.radius / 2) + self.point_y
-        if z == 0:
-            if self.now_point[2] == self.land_z:
-                z = self.takeoff_z
-            else:
-                z = self.land_z
-        return [x, y, z]
-
     def land_mode(self):
         # land
         while not rospy.is_shutdown() and self.current_state.mode != "AUTO.LAND":
             self.set_mode_client(0, "AUTO.LAND")
             self.rate.sleep()
-        self.pub_pose.publish()
         rospy.loginfo("LAND success")
 
     def spin(self):
@@ -110,6 +71,6 @@ class NeuralTest(object):
 
 
 if __name__ == "__main__":
-    rospy.init_node("neural_test")
+    rospy.init_node("safe_area")
     test = NeuralTest()
     test.spin()

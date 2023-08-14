@@ -11,6 +11,6 @@
         <arg name="server" value="$(arg server)" />
     </include>
     <node pkg="uav_control" name="motion_capture_sync" type="motion_capture_sync.py" output="screen">
-        <param name="use_fake_position" value="$(arg use_fake_position)"/>
+        <param name="use_fake_position" type="bool" value="$(arg use_fake_position)"/>
     </node>
 </launch>
