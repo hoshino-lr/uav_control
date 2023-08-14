@@ -11,9 +11,9 @@ from mavros_msgs.msg import AttitudeTarget
 class JoyStick(object):
     use_attitude = True
     """---------------------------------------"""
-    max_throttle = 0.65
+    max_throttle = 0.60
     min_throttle = 0.3
-    middle_throttle = 0.55
+    middle_throttle = 0.50
     """---------------------------------------"""
     vertical_valve = 0
     forward_value = 0
@@ -44,8 +44,8 @@ class JoyStick(object):
     roll_command = 0
     pitch_command = 0
     yaw_rate_command = 0
-    roll_max = 25  # deg
-    pitch_max = 25  # deg
+    roll_max = 20 # deg
+    pitch_max = 20  # deg
     yaw_rate_max = 25  # deg/s
     """-----------------------------------------"""
 
