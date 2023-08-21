@@ -34,7 +34,7 @@ class NeuralTest(object):
         self.set_mode_client = rospy.ServiceProxy(self.srv_mode_topic, SetMode)
 
         self.safe_x_max, self.safe_x_min, self.safe_y_max, self.safe_y_min, self.safe_z_max, self.safe_z_min = \
-            0, 0, 0, 0, 0, 0
+            1.2, -1.2, 2.2, -0.5, 1.5, 0
 
         time.sleep(1)
 
