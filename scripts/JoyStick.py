@@ -66,9 +66,9 @@ class JoyStick(object):
             rospy.Subscriber("/joy", Joy, self.joystick_callback_attitude, tcp_nodelay=True)
         else:
             rospy.Subscriber("/joy", Joy, self.joystick_callback_pose, tcp_nodelay=True)
-        self.attitude_publisher = rospy.Publisher("/mavros/setpoint_raw/attitude", data_class=AttitudeTarget
+        self.attitude_publisher = rospy.Publisher("/zwf/setpoint_raw/attitude", data_class=AttitudeTarget
                                                   , tcp_nodelay=True, queue_size=1)
-        self.pose_publisher = rospy.Publisher("/mavros/setpoint_pose/pose", data_class=PoseStamped
+        self.pose_publisher = rospy.Publisher("/uav/command/pose", data_class=PoseStamped
                                               , tcp_nodelay=True, queue_size=1)
 
     def publish_attitude(self):
