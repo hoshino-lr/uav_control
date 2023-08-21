@@ -14,5 +14,8 @@
    2. motion_capture
       > 启动动捕文件
    
-   
-   
+3. record data
+   ```` Shell
+   rosbag record /mavros/imu/data /mavros/setpoint_raw/attitude /px4/vision_odom /mavros/battery 
+   /mavros/servo_output_raw -o uav_t2.bag
+   ````

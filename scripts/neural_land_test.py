@@ -36,20 +36,26 @@ class NeuralTest(object):
         self.set_mode_client = rospy.ServiceProxy(self.srv_mode_topic, SetMode)
 
         self.safe_x_max, self.safe_x_min, self.safe_y_max, self.safe_y_min, self.safe_z_max, self.safe_z_min = \
-            0, 0, 0, 0, 0, 0
+            1, -1, 2, -2, 1.5, 0
 
         time.sleep(1)
 
         """-----------------------------------------------------------"""
         self.radius = 0.5  # m
-        self.land_z = 1  # m
-        self.takeoff_z = 1.5  # m
-        self.point_x, self.point_y = 0, 0
-        self.valid_times_max = 200
+        self.land_z = 0.8  # m
+        self.takeoff_z = 1.4  # m
+        self.point_x, self.point_y = -0.6, 0.5
+        self.valid_times_max = 150
         self.valid_times = 0
         self.valid_radius = 0.2
         """-----------------------------------------------------------"""
+        self.count = 0
+        self.count_max = 20
+        """-----------------------------------------------------------"""
         self.now_point = self.generate_point(self.land_z)
+        self.set_pose.pose.position.x, self.set_pose.pose.position.y, \
+            self.set_pose.pose.position.z = self.now_point[0], self.now_point[1], self.now_point[2]
+        self.set_pose.pose.orientation.w = 1
 
     def distance(self, input_point):
         return math.dist(input_point, [self.motion_pose.pose.position.x,
@@ -62,11 +68,12 @@ class NeuralTest(object):
                 self.valid_times += 1
         else:
             self.valid_times = 0
+            self.count += 1
             self.now_point = self.generate_point()
             self.set_pose.pose.position.x, self.set_pose.pose.position.y, \
                 self.set_pose.pose.position.z = self.now_point[0], self.now_point[1], self.now_point[2]
 
-    def generate_point(self, z=0):
+    def generate_point(self, z=0.):
         x = random.uniform(- self.radius / 2, self.radius / 2) + self.point_x
         y = random.uniform(- self.radius / 2, self.radius / 2) + self.point_y
         if z == 0:
@@ -81,15 +88,17 @@ class NeuralTest(object):
         while not rospy.is_shutdown() and self.current_state.mode != "AUTO.LAND":
             self.set_mode_client(0, "AUTO.LAND")
             self.rate.sleep()
-        self.pub_pose.publish()
         rospy.loginfo("LAND success")
 
     def spin(self):
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown() and self.count < self.count_max:
             if not self.check_position():
                 self.land_mode()
                 break
+            self.check_point()
+            self.pub_pose.publish(self.set_pose)
             self.rate.sleep()
+        self.land_mode()
 
     def check_position(self) -> bool:
         if self.safe_x_max > self.motion_pose.pose.position.x > self.safe_x_min and \
