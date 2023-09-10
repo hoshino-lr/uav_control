@@ -1,21 +1,13 @@
-# tips
-1. 使用MAVLINK提升Px4飞控的数据采样率
-   1. 在qgc中使用
-       ```` Shell
-       mavlink stream -d /dev/ttyS1 -s SERVO_OUTPUT_RAW_0 -r 50
-       ````
-   2. 在gazebo仿真中使用
-      ```` Shell
-      mavlink stream -u 14557 -s SERVO_OUTPUT_RAW_0 -r 50
-      ````
-2. launch文件使用
-   1. mavros.launch 
-      > 作为最终实机程序运行的文件
-   2. motion_capture
-      > 启动动捕文件
-   
-3. record data
-   ```` Shell
-   rosbag record /mavros/imu/data /mavros/setpoint_raw/attitude /px4/vision_odom /mavros/battery 
-   /mavros/servo_output_raw -o uav_t2.bag
-   ````
+UAV_CONTROL
+-----------
+本仓库为实验室用uav控制基础仓库，适合入门学习。
+
+------------------------------
+
+#### 本仓库配合使用的PX4版本为 `1.13.3`
+
+
+仓库分为代码部分和电子元件基础部分
+- 电子原件基础部分详情见 [电子元件.md](readmes/电子元件.md)
+- uav控制部分详情见 [Control.md](readmes/Control.md)
+- 本仓库配合使用的mavros仓库为 [mavros](https://github.com/jackxiongh/mavros)
