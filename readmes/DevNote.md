@@ -114,11 +114,7 @@
     `INFO  [ecl/EKF] starting vision yaw fusion`
     if we uncheck GPS in EKF2_AID_MASK, no `global_position` will be published until
     the origin/home are manually setted
-    
-  - check:
-    ```bash
-    rostopic echo /mavros/local_position/pose
-    ```
+
   
   
 

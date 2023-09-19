@@ -40,6 +40,15 @@ px4 入门
             请使用搜索引擎
          2. 自行编译安装（如果需要用到控制pwm的飞机，只能通过这个方式安装）\
             参考仓库  [Mavros](https://github.com/jackxiongh/mavros)
+         3. 安装mavros时需要geographicLib 请自行查阅MAVROSgithub仓库安装
+            ```
+            Since GeographicLib requires certain datasets 
+            (mainly the geoid dataset) so to fulfill certain calculations, 
+            these need to be installed manually by the user using geographiclib-tools,
+            which can be installed by apt-get in Debian systems. 
+            For a quicker procedure, just run the available script in the
+            "mavros/scripts" folder, install_geographiclib_datasets.sh.
+            ```
    4. 仿真
       1. 参考网址[ROS with gazebo Classic Simulation](http://docs.px4.io/main/en/simulation/ros_interface.html)
          - 注意事项 最后运行的launch文件是mavros_posix_sitl.launch
@@ -49,6 +58,16 @@ px4 入门
       2. 无人机传感器参数矫正（看视频5）
       3. 无人机电调电池校准（看视频5）
       4. 无人机特殊设置
+         - 串口 在QGC中修改
+           ![img.png](img.png)
+         - EKF 在QGC中修改
+           - EKF2_AID_MASK = 24
+           - EKF2_HGT_MODE = VISION
+           - 设置完之后重新进行水平校准
+           - 参考网址 [利用视觉或运动捕捉系统进行位置估计](https://docs.px4.io/main/zh/ros/external_position_estimation.html)
+         - 直接控制PWM
+           - 
+           - 如果想使用自定义混控器的方案，请参考 [DevNote.md](DevNote.md)
    6. 连接无人机
       1. 通过有线连接飞机
          ```` Shell
@@ -56,12 +75,15 @@ px4 入门
          ````
       2.  通过wifi模块连接飞机
            ```` Shell
-           roslaunch mavros px4.launch fcu_url:="udp://:14540@{无人机的ip:port}" gcs_url:=udp://@{地面站的ip}
+           roslaunch mavros px4.launch fcu_url:="udp://:{UgCS Port}@{无人机的ip:{Local Port}}" gcs_url:=udp://@{地面站的ip}
            ```` 
-      例子
-      ```` Shell
-      roslaunch mavros px4.launch fcu_url:="udp://:14540@192.168.1.1:14557" gcs_url:=udp://@192.168.1.2
-      ````
+          - wifi模块设置
+            ![img_2.png](img_2.png)
+            - 其中 需要关注Local port(不需要改) UGCS Port(默认为14540，如果有多架无人机请根据世纪情况修改) 静态ip请根据实际场景设置 
+      - 例子
+         ```` Shell
+         roslaunch mavros px4.launch fcu_url:="udp://:14540@192.168.1.1:14557" gcs_url:=udp://@192.168.1.2
+         ````
 -----
 
 仓库文件说明
@@ -92,3 +114,7 @@ px4 入门
    ```` Shell
    rosbag record /mavros/imu/data /mavros/setpoint_raw/attitude /px4/vision_odom /mavros/battery /mavros/servo_output_raw -o uav_t2.bag
    ````
+2. 机架选择
+   ![img_1.png](img_1.png)
+3. 正反浆 \
+   从上往下看，顶视顺时针转的电机装反桨，顶视逆时针转的电机装正桨。一般桨上会有ccw和cw字样，ccw正桨，cw反桨
