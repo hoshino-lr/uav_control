@@ -24,10 +24,9 @@ px4 入门
          ````Shell
          sudo bash ubuntu.sh
          ````
-      5. 作为功能包编译px4
-         ````Shell
-         catkin build
-         ````
+      5. 作为功能包编译px4 \
+         参考 [启动 ROS/Simulation](https://docs.px4.io/main/zh/simulation/ros_interface.html)
+         ![img_4.png](img_4.png)
    3. PX4配套软件安装
       1. QGC的安装 \
          搜索引擎搜索QGroundcontrol 自行安装
