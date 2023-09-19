@@ -66,7 +66,9 @@ px4 入门
            - 设置完之后重新进行水平校准
            - 参考网址 [利用视觉或运动捕捉系统进行位置估计](https://docs.px4.io/main/zh/ros/external_position_estimation.html)
          - 直接控制PWM
-           - 
+           - SYS_CTRL_ALLOC = True
+           - ![img_3.png](img_3.png)
+           - 配合本实验室自定义mavros仓库使用 [mavros](https://github.com/jackxiongh/mavros)
            - 如果想使用自定义混控器的方案，请参考 [DevNote.md](DevNote.md)
    6. 连接无人机
       1. 通过有线连接飞机
