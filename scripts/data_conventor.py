@@ -3,9 +3,9 @@ import rospy
 import csv
 
 import geometry_msgs.msg
-from mavros_msgs.msg import BatteryStatus, ServoOutput, AttitudeTarget
+from mavros_msgs.msg import  ServoOutput, AttitudeTarget
 from nav_msgs.msg import Odometry
-from sensor_msgs.msg import Imu
+from sensor_msgs.msg import Imu, BatteryState
 from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped
 import tf_conversions
 import time
@@ -15,9 +15,10 @@ sub_battery_topic = 'mavros/battery'
 sub_odom_topic = 'px4/vision_odom'
 sub_imu_topic = "mavros/imu/data"
 sub_pwm_topic = "mavros/servo_output_raw"
-sub_attitude_topic = "mavros/setpoint_raw/attitude"
+# sub_attitude_topic = "mavros/setpoint_raw/attitude"
+sub_attitude_topic = "mavros/setpoint_raw/target_attitude"
 num_count = 0
-csv_topics = ['num', 't', 'p', 'v', 'q', 'T_sp', 'q_sp', 'hover_throttle', 'fa', 'pwm']
+csv_topics = ['num', 't', 'p', 'v', 'q', 'T_sp', 'q_sp', 'hover_throttle', 'fa', 'pwm', 'battery']
 data_storage = []
 dict_interface = {i: 0 for i in csv_topics}
 fa = []
@@ -32,13 +33,14 @@ start_t = 0
 data_odom = Odometry()
 data_pwm = ServoOutput()
 data_imu = Imu()
-data_battery = BatteryStatus()
-data_battery.voltage = 12.6
+data_battery = BatteryState()
 data_attitude = AttitudeTarget()
 
 
-def battery_cb(data: BatteryStatus):
+def battery_cb(data: BatteryState):
+    global dict_interface
     data_battery.voltage = data.voltage
+    dict_interface['battery'] = data_battery.voltage
 
 
 def imu_cb(data: Imu):
@@ -46,9 +48,11 @@ def imu_cb(data: Imu):
 
 
 def attitude_cb(data: AttitudeTarget):
+    global dict_interface, data_storage
     data_attitude.orientation = data.orientation
     data_attitude.thrust = data.thrust
-
+    dict_interface['T_sp'] = data_attitude.thrust
+    data_storage.append(dict_interface.copy())
 
 def odom_cb(data: Odometry):
     global num_count, start_t
@@ -97,20 +101,21 @@ def pwm_cb(data: ServoOutput):
 
 
 def to_csv(output_file_name: str):
-    with open(output_file_name, 'w',encoding='utf8', newline='') as csvfile:
+    with open(output_file_name, 'w', encoding='utf8', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=csv_topics)
         writer.writeheader()
         writer.writerows(data_storage)
 
-sub_odom = rospy.Subscriber(sub_odom_topic, Odometry, odom_cb)
-sub_imu = rospy.Subscriber(sub_imu_topic, Imu, imu_cb)
-sub_pwm = rospy.Subscriber(sub_pwm_topic, ServoOutput, pwm_cb)
-sub_battery = rospy.Subscriber(sub_battery_topic, BatteryStatus, battery_cb)
+
+# sub_odom = rospy.Subscriber(sub_odom_topic, Odometry, odom_cb)
+# sub_imu = rospy.Subscriber(sub_imu_topic, Imu, imu_cb)
+# sub_pwm = rospy.Subscriber(sub_pwm_topic, ServoOutput, pwm_cb)
+sub_battery = rospy.Subscriber(sub_battery_topic, BatteryState, battery_cb)
 sub_attitude = rospy.Subscriber(sub_attitude_topic, AttitudeTarget, attitude_cb)
 
 topic_names = []
 csv_names = []
 
-output_file_name = "/home/hoshino/data/neural-fly/data/t2_experiment/custom_random10_mpc_2832v.csv"
-rospy.sleep(90)
+output_file_name = "/home/hoshino/文档/battery/20230923/2023-09-23-13kg.csv"
+rospy.sleep(60)
 to_csv(output_file_name)

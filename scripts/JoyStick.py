@@ -12,9 +12,9 @@ from geometry_msgs.msg import PoseStamped
 class JoyStick(object):
     use_attitude = True
     """---------------------------------------"""
-    max_throttle = 0.60
-    min_throttle = 0.3
-    middle_throttle = 0.50
+    max_throttle = 0.48
+    min_throttle = 0.38
+    middle_throttle = 0.43
     """---------------------------------------"""
     vertical_valve = 0
     forward_value = 0
@@ -66,7 +66,7 @@ class JoyStick(object):
             rospy.Subscriber("/joy", Joy, self.joystick_callback_attitude, tcp_nodelay=True)
         else:
             rospy.Subscriber("/joy", Joy, self.joystick_callback_pose, tcp_nodelay=True)
-        self.attitude_publisher = rospy.Publisher("/zwf/setpoint_raw/attitude", data_class=AttitudeTarget
+        self.attitude_publisher = rospy.Publisher("/mavros/setpoint_raw/attitude", data_class=AttitudeTarget
                                                   , tcp_nodelay=True, queue_size=1)
         self.pose_publisher = rospy.Publisher("/uav/command/pose", data_class=PoseStamped
                                               , tcp_nodelay=True, queue_size=1)
@@ -95,7 +95,7 @@ class JoyStick(object):
         self.throttle = (data.axes[1] + 1) / 2
         self.calculate_throttle(self.throttle)
         self.pitch_command = data.axes[3] * self.pitch_max / 180 * pi
-        self.roll_command = data.axes[2] * self.roll_max / 180 * pi
+        self.roll_command = - data.axes[2] * self.roll_max / 180 * pi
         self.yaw_rate_command = data.axes[0] * self.yaw_rate_max / 180 * pi
         # self.publish_attitude()
 
