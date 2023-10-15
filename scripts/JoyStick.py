@@ -6,8 +6,9 @@ from tf.transformations import quaternion_from_euler
 from sensor_msgs.msg import Joy
 from math import pi
 from mavros_msgs.msg import AttitudeTarget
-from geometry_msgs.msg import PoseStamped,TwistStamped
+from geometry_msgs.msg import PoseStamped,TwistStamped,PointStamped
 from simple_pid import PID
+# from uav_control.msg import Test
 
 class JoyStick(object):
     use_attitude = True
@@ -47,7 +48,7 @@ class JoyStick(object):
     yaw_rate_command = 0
     roll_max = 20  # deg
     pitch_max = 20  # deg
-    yaw_rate_max = 25  # deg/s
+    yaw_rate_max = 5  # deg/s
     """-----------------------------------------"""
     z_max = 0
     z_min = 0
@@ -63,6 +64,7 @@ class JoyStick(object):
 
         self.motion_pose = PoseStamped()
         self.motion_velocity = TwistStamped()
+        self.yaw_command = 0
 
         # 订阅Joystick的消息
         if self.use_attitude:
@@ -81,32 +83,50 @@ class JoyStick(object):
                                                   , tcp_nodelay=True, queue_size=1)
         self.pose_publisher = rospy.Publisher("/uav/command/pose", data_class=PoseStamped
                                               , tcp_nodelay=True, queue_size=1)
+        
+        self.test_publisher = rospy.Publisher("/mavros/setpoint_raw/test", data_class=PointStamped
+                                                  , tcp_nodelay=True, queue_size=1)
 
     def callback_pose(self, pose_data: PoseStamped):
         # 回调函数，记录实际位置值并进行单位转换，mm->m
-        self.motion_pose.pose.position.x = pose_data.pose.position.x
-        self.motion_pose.pose.position.y = pose_data.pose.position.y
-        self.motion_pose.pose.position.z = pose_data.pose.position.z
+        self.motion_pose.pose.position.x = pose_data.pose.position.x/1000
+        self.motion_pose.pose.position.y = pose_data.pose.position.y/1000
+        self.motion_pose.pose.position.z = pose_data.pose.position.z/1000
+        # self.motion_pose.pose.position.x = pose_data.pose.position.x
+        # self.motion_pose.pose.position.y = pose_data.pose.position.y
+        # self.motion_pose.pose.position.z = pose_data.pose.position.z
         self.motion_pose.pose.orientation = pose_data.pose.orientation
 
     def callback_velocity(self, velocity_data: TwistStamped):
         # 回调函数，记录实际位置值并进行单位转换，mm->m
-        self.motion_velocity.twist.linear.x = velocity_data.twist.linear.x
-        self.motion_velocity.twist.linear.y = velocity_data.twist.linear.y
-        self.motion_velocity.twist.linear.z = velocity_data.twist.linear.z
-        self.motion_velocity.twist.angular.x = velocity_data.twist.angular.x
-        self.motion_velocity.twist.angular.y = velocity_data.twist.angular.y
-        self.motion_velocity.twist.angular.z = velocity_data.twist.angular.z
+        self.motion_velocity.twist.linear.x = velocity_data.twist.linear.x/1000
+        self.motion_velocity.twist.linear.y = velocity_data.twist.linear.y/1000
+        self.motion_velocity.twist.linear.z = velocity_data.twist.linear.z/1000
+        self.motion_velocity.twist.angular.x = velocity_data.twist.angular.x/1000
+        self.motion_velocity.twist.angular.y = velocity_data.twist.angular.y/1000
+        self.motion_velocity.twist.angular.z = velocity_data.twist.angular.z/1000
+        # self.motion_velocity.twist.linear.x = velocity_data.twist.linear.x
+        # self.motion_velocity.twist.linear.y = velocity_data.twist.linear.y
+        # self.motion_velocity.twist.linear.z = velocity_data.twist.linear.z
+        # self.motion_velocity.twist.angular.x = velocity_data.twist.angular.x
+        # self.motion_velocity.twist.angular.y = velocity_data.twist.angular.y
+        # self.motion_velocity.twist.angular.z = velocity_data.twist.angular.z
 
     def publish_attitude(self):
         pub_raw = AttitudeTarget()
+        pub_rpy = PointStamped()
         pub_raw.type_mask = 3
         pub_raw.header.stamp = rospy.rostime.get_rostime()
-        pub_raw.body_rate.z = self.yaw_rate_command
+        pub_raw.body_rate.z = 0
+        self.yaw_command = self.yaw_command + self.yaw_rate_command
         [pub_raw.orientation.x, pub_raw.orientation.y, pub_raw.orientation.z,
-         pub_raw.orientation.w] = quaternion_from_euler(ai=self.roll_command, aj=self.pitch_command, ak=0)
+         pub_raw.orientation.w] = quaternion_from_euler(ai=self.roll_command, aj=self.pitch_command, ak=self.yaw_command)
         pub_raw.thrust = self.throttle
         self.attitude_publisher.publish(pub_raw)
+
+        pub_rpy.header.stamp = rospy.rostime.get_rostime()
+        pub_rpy.point.x, pub_rpy.point.y, pub_rpy.point.z = self.roll_command, self.pitch_command, self.yaw_command
+        self.test_publisher.publish(pub_rpy)
 
     def publish_pose(self):
         pub_raw = PoseStamped()
@@ -125,9 +145,12 @@ class JoyStick(object):
         target_velocity = position_loop_pid(self.motion_pose.pose.position.z)
         # 速度环
         velocity_loop_pid = PID(0.9, 0.01, 0.01, setpoint=target_velocity)
-        velocity_loop_pid.output_limits = (0, 0.4)
+        velocity_loop_pid.output_limits = (0, 0.15)
         velocity_loop_pid.setpoint = target_velocity
-        self.throttle = velocity_loop_pid(self.motion_velocity.twist.linear.z)+0.6
+        self.throttle = velocity_loop_pid(self.motion_velocity.twist.linear.z)+0.15
+
+        print("target_velocity:",target_velocity)
+        print("throttle:",self.throttle)
 
     def joystick_callback_attitude(self, data: Joy):
         # 获取Joystick的输入值
@@ -197,7 +220,7 @@ if __name__ == '__main__':
         rate = rospy.Rate(50)
         while True:
             if joystick.use_attitude:
-                joystick.fixed_height(3)
+                joystick.fixed_height(0.8)
                 joystick.publish_attitude()
             else:
                 joystick.publish_pose()
