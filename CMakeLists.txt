@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   roscpp
   rospy
+  std_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -73,6 +75,12 @@ find_package(catkin REQUIRED COMPONENTS
 #   std_msgs  # Or other packages containing msgs
 # )
 
+add_message_files(
+	FILES
+	Test.msg
+)
+generate_messages(DEPENDENCIES std_msgs)
+
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -111,7 +119,7 @@ message(STATUS "Chmod a+x the dynamic_reconfigure file")
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES dynamic_tutorials
-#  CATKIN_DEPENDS dynamic_reconfigure roscpp rospy
+  CATKIN_DEPENDS dynamic_reconfigure roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
+# 接收到位置、速度信息再转发出去
+
 import geometry_msgs.msg
 import rospy
 import message_filters
