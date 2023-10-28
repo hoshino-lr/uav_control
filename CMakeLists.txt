@@ -77,7 +77,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
 	FILES
-	Test.msg
 )
 generate_messages(DEPENDENCIES std_msgs)
 
