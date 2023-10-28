@@ -10,10 +10,12 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped
 import tf_conversions
 
+drone_name = "uav_nx"
+
 pub_pose_topic = '/mavros/vision_pose/pose'
 pub_odom_topic = '/px4/vision_odom'
-sub_pose_topic = "/vrpn_client_node/uav_nx/pose"
-sub_twist_topic = "/vrpn_client_node/uav_nx/twist"
+sub_pose_topic = f"/vrpn_client_node/{drone_name}/pose"
+sub_twist_topic = f"/vrpn_client_node/{drone_name}/twist"
 
 use_fake_position = rospy.get_param('use_fake_position', False)
 # init node

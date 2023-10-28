@@ -3,7 +3,7 @@ import rospy
 import csv
 
 import geometry_msgs.msg
-from mavros_msgs.msg import  ServoOutput, AttitudeTarget
+from mavros_msgs.msg import ServoOutput, AttitudeTarget
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu, BatteryState
 from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped
@@ -53,6 +53,7 @@ def attitude_cb(data: AttitudeTarget):
     data_attitude.thrust = data.thrust
     dict_interface['T_sp'] = data_attitude.thrust
     data_storage.append(dict_interface.copy())
+
 
 def odom_cb(data: Odometry):
     global num_count, start_t
@@ -116,6 +117,6 @@ sub_attitude = rospy.Subscriber(sub_attitude_topic, AttitudeTarget, attitude_cb)
 topic_names = []
 csv_names = []
 
-output_file_name = "/home/hoshino/文档/battery/20230923/2023-09-23-13kg.csv"
-rospy.sleep(60)
+output_file_name = "data.csv"
+rospy.sleep(120)
 to_csv(output_file_name)

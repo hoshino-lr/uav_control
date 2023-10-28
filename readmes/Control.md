@@ -95,6 +95,8 @@ px4 入门
       在qgc中输入
        ```` Shell
        mavlink stream -d /dev/ttyS1 -s SERVO_OUTPUT_RAW_0 -r 50
+       mavlink stream -d /dev/ttyS1 -s ATTITUDE_TARGET -r 50
+       mavlink stream -d /dev/ttyS1 -s BATTERY_STATUS -r 10
        ````
    2. 在gazebo仿真中使用
       ```` Shell
