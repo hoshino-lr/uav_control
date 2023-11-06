@@ -22,7 +22,7 @@ class NeuralTest(object):
         self.current_state = State()
         self.set_pose = PoseStamped()
 
-        self.motion_pose = Odometry()
+        self.motion_pose = PoseStamped()
         self.long_cmd = CommandLongRequest()
         # create parameter generator
         self.force_arm_client = rospy.ServiceProxy(self.srv_command_topic, CommandLong)
