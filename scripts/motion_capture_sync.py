@@ -46,7 +46,7 @@ motion_odom.twist.covariance = [-1, 0, 0, 0, 0, 0,
 callback_time = time.time()
 
 
-def callback_timer():
+def callback_timer(data):
     global motion_data, pub_pose, motion_odom, pub_odom, callback_time
     if time.time() - callback_time > 0.1:
         motion_odom.pose.pose.position.z = 9e4
@@ -80,8 +80,8 @@ twist_sub = message_filters.Subscriber(sub_twist_topic, TwistStamped)
 all_sub = message_filters.ApproximateTimeSynchronizer([pose_sub, twist_sub], 1, 1, allow_headerless=True)
 all_sub.registerCallback(callback_all)
 
-timer_sub = rospy.Timer(rospy.Duration(0, int(2e6)), callback=callback_timer, oneshot=False)
-
+timer_sub = rospy.Timer(rospy.Duration(0, int(2e7)), callback=callback_timer, oneshot=False)
+timer_sub.start()
 r = rospy.Rate(50)  # limited by bit rate of radio telemetry
 
 while not rospy.is_shutdown():
