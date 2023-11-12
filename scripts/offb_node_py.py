@@ -10,7 +10,7 @@ from geometry_msgs.msg import PoseStamped, TwistStamped
 import tf_conversions
 from dynamic_reconfigure.server import Server
 from uav_control.cfg import uavConfig
-from simple_pid import PID
+# from simple_pid import PID
 
 class UAVController(object):
 
@@ -113,11 +113,11 @@ class UAVController(object):
                 self.srv_dyn.update_configuration({"attitude_mode": False})
             if self.mode == 0:
                 if not self.check_position():
-                    self.force_disarm()
+                    self.land_mode()
                     break
             elif self.mode == 1:
                 if not self.check_position():
-                    self.force_disarm()
+                    self.land_mode()
                     break
                 q = tf_conversions.transformations.quaternion_from_euler(0, 0, self.yaw)
                 self.set_pose.pose.orientation.x = q[0]
@@ -127,7 +127,7 @@ class UAVController(object):
                 self.pub_pose.publish(self.set_pose)
             elif self.mode == 2:
                 if not self.check_position():
-                    self.force_disarm()
+                    self.land_mode()
                     break
                 q = tf_conversions.transformations.quaternion_from_euler(self.roll, self.pitch, 0)
                 self.set_attitude.orientation.x = q[0]
@@ -137,11 +137,11 @@ class UAVController(object):
                 self.pub_attitude.publish(self.set_attitude)
             elif self.mode == 3:
                 if not self.check_position():
-                    self.force_disarm()
+                    self.land_mode()
                     break
                 self.pub_velocity.publish(self.set_velocity)
             elif self.mode == 4:
-                self.force_disarm()
+                self.land_mode()
             self.rate.sleep()
 
     def takeoff_mode(self):
@@ -181,20 +181,20 @@ class UAVController(object):
     def callback_altitudemode(self):
         pass
 
-    def fixed_height(self, target_height):
-        # 位置环
-        position_loop_pid = PID(2.5, 1, 0.1, setpoint=target_height)
-        position_loop_pid.output_limits = (0, 2.0)
-        position_loop_pid.setpoint = target_height
-        target_velocity = position_loop_pid(self.motion_pose.pose.position.z)
-        # 速度环
-        velocity_loop_pid = PID(0.9, 0.01, 0.01, setpoint=target_velocity)
-        velocity_loop_pid.output_limits = (0, 0.15)
-        velocity_loop_pid.setpoint = target_velocity
-        self.throttle = velocity_loop_pid(self.motion_velocity.twist.linear.z) + 0.15
-
-        print("target_velocity:", target_velocity)
-        print("throttle:", self.throttle)
+    # def fixed_height(self, target_height): TODO: FIX HEIGHT
+    #     # 位置环
+    #     position_loop_pid = PID(2.5, 1, 0.1, setpoint=target_height)
+    #     position_loop_pid.output_limits = (0, 2.0)
+    #     position_loop_pid.setpoint = target_height
+    #     target_velocity = position_loop_pid(self.motion_pose.pose.position.z)
+    #     # 速度环
+    #     velocity_loop_pid = PID(0.9, 0.01, 0.01, setpoint=target_velocity)
+    #     velocity_loop_pid.output_limits = (0, 0.15)
+    #     velocity_loop_pid.setpoint = target_velocity
+    #     self.throttle = velocity_loop_pid(self.motion_velocity.twist.linear.z) + 0.15
+    #
+    #     print("target_velocity:", target_velocity)
+    #     print("throttle:", self.throttle)
 
     def callback_attitudemode(self):
         while not rospy.is_shutdown():
