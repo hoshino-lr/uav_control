@@ -58,9 +58,9 @@ def callback_all(pose_data: PoseStamped, twist_data: TwistStamped):
 
     callback_time = time.time()
 
-    motion_data.pose.position.x = pose_data.pose.position.x / 1000
-    motion_data.pose.position.y = pose_data.pose.position.y / 1000
-    motion_data.pose.position.z = pose_data.pose.position.z / 1000
+    motion_data.pose.position.x = pose_data.pose.position.x / 1.0
+    motion_data.pose.position.y = pose_data.pose.position.y / 1.0
+    motion_data.pose.position.z = pose_data.pose.position.z / 1.0
     motion_data.pose.orientation = pose_data.pose.orientation
     motion_data.header.frame_id = pose_data.header.frame_id
     motion_data.header.stamp = pose_data.header.stamp
@@ -68,20 +68,19 @@ def callback_all(pose_data: PoseStamped, twist_data: TwistStamped):
     motion_odom.header.stamp = pose_data.header.stamp
     motion_odom.pose.pose = motion_data.pose
     motion_odom.twist.twist.angular = twist_data.twist.angular
-    motion_odom.twist.twist.linear.x = twist_data.twist.linear.x / 1000
-    motion_odom.twist.twist.linear.y = twist_data.twist.linear.y / 1000
-    motion_odom.twist.twist.linear.z = twist_data.twist.linear.z / 1000
+    motion_odom.twist.twist.linear.x = twist_data.twist.linear.x / 1.0
+    motion_odom.twist.twist.linear.y = twist_data.twist.linear.y / 1.0
+    motion_odom.twist.twist.linear.z = twist_data.twist.linear.z / 1.0
 
     pub_pose.publish(motion_data)
 
 
 pose_sub = message_filters.Subscriber(sub_pose_topic, PoseStamped)
 twist_sub = message_filters.Subscriber(sub_twist_topic, TwistStamped)
-all_sub = message_filters.ApproximateTimeSynchronizer([pose_sub, twist_sub], 1, 1, allow_headerless=True)
+all_sub = message_filters.ApproximateTimeSynchronizer([pose_sub, twist_sub], 2, 0.05, allow_headerless=True)
 all_sub.registerCallback(callback_all)
 
 timer_sub = rospy.Timer(rospy.Duration(0, int(2e7)), callback=callback_timer, oneshot=False)
-timer_sub.start()
 r = rospy.Rate(50)  # limited by bit rate of radio telemetry
 
 while not rospy.is_shutdown():

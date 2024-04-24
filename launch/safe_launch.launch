@@ -24,10 +24,4 @@
     <node pkg="uav_control" name="safe_area" type="safe_area.py" output="screen">
     </node>
 
-    <node pkg="joy" name="joy_node" type="joy_node" output="screen">
-    </node>
-
-    <node pkg="uav_control" name="joystick_listener" type="JoyStick.py" output="screen">
-    </node>
-
 </launch>
